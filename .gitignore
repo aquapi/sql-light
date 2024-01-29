@@ -1,0 +1,6 @@
+# Bun 
+bun.lockb
+node_modules
+
+# Build
+/lib
