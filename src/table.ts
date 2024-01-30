@@ -9,7 +9,7 @@ export interface TableOptions<Name extends string, Schema extends BaseSchema> {
     name: Name,
     schema: Schema,
 
-    primaryKeys?: keyof Schema[];
+    primaryKeys?: (keyof Schema)[];
     foreignKeys?: ForeignKeysConstraint<Extract<keyof Schema, string>>[];
 
     withoutRowID?: boolean;
