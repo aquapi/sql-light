@@ -15,28 +15,6 @@ export interface TableOptions<Name extends string, Schema extends BaseSchema> {
     withoutRowID?: boolean;
 }
 
-export interface Table<Name, Schema> {
-    <K extends Extract<keyof Schema, string>[]>(...keys: K): string;
-}
-
-export type TableExtension<Name extends string, Schema extends BaseSchema> = {
-    [K in `$${Extract<keyof Schema, string>}`]: `${Name}.${K}`
-}
-
-const proxyHandler = {
-    apply: (target, _, keys) => `${target.name}(${keys.join(',')})`,
-    get: (target, prop) => {
-        if (prop in target)
-            return Reflect.get(target, prop);
-
-        if (typeof prop === 'string' && prop.startsWith('$'))
-            // @ts-ignore
-            return target[prop] = `${target.options.name}.${prop.substring(1)}`;
-
-        return null;
-    }
-} as ProxyHandler<Table<any, any>>;
-
 export class Table<Name extends string, Schema extends BaseSchema> extends Function {
     /**
      * Create table statement
@@ -66,8 +44,6 @@ export class Table<Name extends string, Schema extends BaseSchema> extends Funct
                 rows.push(`FOREIGN KEY(${ct.keys.join(',')}) REFERENCES ${ct.ref}`);
 
         this.init = `CREATE TABLE IF NOT EXISTS ${name} (${rows.join(',')})${withoutRowID === true ? ' WITHOUT ROWID' : ''}`;
-
-        return new Proxy(this, proxyHandler);
     }
 
     /**
