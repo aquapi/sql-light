@@ -1,7 +1,8 @@
 {
   "name": "sql-light",
-  "version": "1.0.0",
-  "module": "index.ts",
+  "version": "1.0.1",
+  "module": "lib/index.ts",
+  "types": "lib/index.d.ts",
   "description": "SQLite query builder for ya smol project",
   "type": "module",
   "devDependencies": {
