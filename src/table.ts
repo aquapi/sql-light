@@ -15,11 +15,20 @@ export interface TableOptions<Name extends string, Schema extends BaseSchema> {
     withoutRowID?: boolean;
 }
 
+type TupleUnion<U extends string, R extends any[] = []> = {
+    [S in U]: Exclude<U, S> extends never ? [...R, S] : TupleUnion<Exclude<U, S>, [...R, S]>;
+}[U];
+
 export class Table<Name extends string, Schema extends BaseSchema> extends Function {
     /**
      * Create table statement
      */
     readonly init: string;
+
+    /**
+     * All columns
+     */
+    readonly cols: TupleUnion<Extract<keyof Schema, string>>;
 
     constructor(readonly options: TableOptions<Name, Schema>) {
         super();
@@ -44,13 +53,13 @@ export class Table<Name extends string, Schema extends BaseSchema> extends Funct
                 rows.push(`FOREIGN KEY(${ct.keys.join(',')}) REFERENCES ${ct.ref}`);
 
         this.init = `CREATE TABLE IF NOT EXISTS ${name} (${rows.join(',')})${withoutRowID === true ? ' WITHOUT ROWID' : ''}`;
-    }
 
-    /**
-     * Type-safe wrapper for accessing column
-     */
-    col<Keys extends (keyof Schema)[]>(...cols: Keys) {
-        return cols;
+        // Init columns
+        const cols = [];
+        for (const key in schema)
+            cols.push(key);
+
+        this.cols = cols as any;
     }
 
     /**

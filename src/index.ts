@@ -1,9 +1,9 @@
 import { type BaseSchema, Table as BaseTable, type TableOptions } from './table';
 
 // Table proxy handler stuff
-export type TableExtension<Name extends string, Schema extends BaseSchema> = {
-    [K in `$${Extract<keyof Schema, string>}`]: `${Name}.${K}`
-} & (<K extends Extract<keyof Schema, string>[]>(...keys: K) => string);
+export type TableExtension<Name extends string, Schema extends BaseSchema> = { [K in `$${Extract<keyof Schema, string>}`]: `${Name}.${K}` }
+    & { [K in Extract<keyof Schema, string> as `:${K}`]: K }
+    & (<K extends Extract<keyof Schema, string>[]>(...keys: K) => string);
 
 const tableProxyHandler = {
     apply: (target, _, keys) => `${target.options.name}(${keys.join(',')})`,
@@ -11,13 +11,24 @@ const tableProxyHandler = {
         if (prop in target)
             return Reflect.get(target, prop);
 
-        if (typeof prop === 'string' && prop.startsWith('$'))
+        if (typeof prop === 'string') {
+            switch (prop[0]) {
+                case '$':
+                    Reflect.set(target, prop, `${target.options.name}.${prop.substring(1)}`);
+                    break;
+
+                case ':':
+                    Reflect.set(target, prop, prop.substring(1));
+                    break;
+            }
+
             // @ts-ignore
-            return target[prop] = `${target.options.name}.${prop.substring(1)}`;
+            return Reflect.get(target, prop);
+        }
 
         return null;
     }
-} as ProxyHandler<BaseTable<any, any>>;
+} as ProxyHandler<any>;
 
 namespace sql {
     /**
@@ -30,8 +41,18 @@ namespace sql {
     /**
      * Infer from a query string
      */
-    export type QueryInfer<T extends string> = T extends `${infer _}$${infer Prop} ${infer Rest}`
+    export type QueryInfer<T extends string> =
+        // Check token stuff
+        T extends `${string}$${infer Prop},${infer Rest}`
         ? PropObject<Prop> & QueryInfer<Rest>
+        : T extends `${string}$${infer Prop})${infer Rest}`
+        ? PropObject<Prop> & QueryInfer<Rest>
+        : T extends `${string}$${infer Prop}=${infer Rest}`
+        ? PropObject<Prop> & QueryInfer<Rest>
+        : T extends `${string}$${infer Prop} ${infer Rest}`
+        ? PropObject<Prop> & QueryInfer<Rest>
+
+
         : T extends `${infer _}$${infer Prop}`
         ? PropObject<Prop>
         : T extends `$${infer Prop}`

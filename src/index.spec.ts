@@ -35,6 +35,7 @@ test('Table', () => {
     console.log(users.init);
     console.log(posts.init);
 
-    // Log create query
-    console.log(sql.query(`select * from ${users} where id = $id`));
+    // Log queries
+    console.log(sql.query(`select ${users[':name']} from ${users} where id = $id`));
+    console.log(sql.query(`insert into ${users} (${users.cols}) values ($name, $pass)`));
 });

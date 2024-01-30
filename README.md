@@ -21,7 +21,7 @@ const userTable = sql.table({
 db.run(userTable.init);
 
 // Create a query
-const selectUser = sql.query(`select ${userTable.col('pass')} from ${userTable} where ${userTable.$name} = $name`);
+const selectUser = sql.query(`select ${userTable.col.pass} from ${userTable} where ${userTable.$name} = $name`);
 
 // Feed to Bun query initializer
 const query = db.query<{ pass: string }, typeof selectUser.infer>(selectUser);
