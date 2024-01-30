@@ -30,9 +30,9 @@ namespace sql {
     /**
      * Infer from a query string
      */
-    export type QueryInfer<T extends string> = T extends `${infer _} $${infer Prop} ${infer Rest}`
+    export type QueryInfer<T extends string> = T extends `${infer _}$${infer Prop} ${infer Rest}`
         ? PropObject<Prop> & QueryInfer<Rest>
-        : T extends `${infer _} $${infer Prop}`
+        : T extends `${infer _}$${infer Prop}`
         ? PropObject<Prop>
         : T extends `$${infer Prop}`
         ? PropObject<Prop> : {};
@@ -52,7 +52,7 @@ namespace sql {
     /**
      * Yield back the query string with infered types
      */
-    export function query<Q extends string>(query: Q): Q & QueryInfer<Q> {
+    export function query<Q extends string>(query: Q): Q & { infer: QueryInfer<Q> } {
         return query as any;
     }
 }
