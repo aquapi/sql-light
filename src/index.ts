@@ -1,7 +1,8 @@
 import { type BaseSchema, Table as BaseTable, type TableOptions } from './table';
 
 // Table proxy handler stuff
-export type TableExtension<Name extends string, Schema extends BaseSchema> = { [K in Extract<keyof Schema, string> as `$${K}`]: `${Name}.${K}` }
+export type TableExtension<Name extends string, Schema extends BaseSchema> =
+    { [K in Extract<keyof Schema, string> as `$${K}`]: `${Name}.${K}` }
     & { [K in Extract<keyof Schema, string> as `:${K}`]: K }
     & (<K extends Extract<keyof Schema, string>[]>(...keys: K) => string);
 
